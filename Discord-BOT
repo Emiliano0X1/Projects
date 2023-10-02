@@ -1,0 +1,33 @@
+import discord
+from dotenv import load_dotenv
+from discord.ext import commands
+import os
+import random
+
+load_dotenv()
+
+TOKEN = os.getenv('DISCORD_TOKEN')
+
+intents = discord.Intents.default()
+intents.typing = True
+intents.presences = True
+intents.messages=True
+
+
+bot = commands.Bot(command_prefix='/', intents=intents)
+
+@bot.command(name='10')
+async def nine_nine(ctx):  # Agrega el argumento ctx
+    _10_Frases_motivacionales = [
+        'Yesterday is history, tomorrow is a mystery, but today is a gift. That is why it is called present',
+        'Sometimes magical moments can be found in the most unmagical places',
+        'Oh My god',
+        'Messi > Ronaldo',
+        'And I jump From this Highway, My wing broken I spread',
+        'You can say that adolescence is a hole universally present in the lives of everyone. Large or small, we experience hunger and emptiness in our soul during this period. However, to some boys this hole invades their lives with excessive frequency and in complex forms'
+    ]
+
+    response = random.choice(_10_Frases_motivacionales)
+    await ctx.send(response)  # Corrige el envío del mensaje
+
+bot.run(TOKEN)
