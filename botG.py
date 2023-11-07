@@ -4,8 +4,6 @@ from discord.ext import commands
 import requests
 import json
 
-TOKEN = 'MTE1ODgzODUxMTc4NTQ4NDM5OA.GDN81B.BTls5UhYrOBBoqDngCvtIcLyEwNQ6V7S4xvEiU'
-
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='?', intents=intents)
 
