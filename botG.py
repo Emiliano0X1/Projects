@@ -1,13 +1,35 @@
 import discord
+from discord.ui import View, Select
+from dotenv import load_dotenv
+import os
 import random
 from discord.ext import commands
 import requests
 import json
 
+load_dotenv()
+
+TOKEN= os.getenv('BOTG_TOKEN')
+
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='?', intents=intents)
 
 max_xd=309
+
+@bot.command(name='info',help='Bienvenido, soy BotG')
+async def info(ctx):
+    embed=discord.Embed(
+        title=':book: Menú de Comandos',
+        description='Estos son los comandos que contiene BotG',
+        color=discord.Colour.red()
+    )
+
+    embed.add_field(name='_?frase_',value='Inspira en los momentos dificiles',inline=False)
+    embed.add_field(name='?south',value='Entretenimiento puro: un episodio radom de South Park',inline=False)
+    embed.add_field(name='?surprise',value='Just Do It',inline=False)
+    embed.add_field(name='?(day of a week)',value='Horario de ese dia',inline=False)
+
+    await ctx.send(embed=embed)
 
 @bot.command(name='surprise')
 async def surprise(ctx):
@@ -18,9 +40,57 @@ async def surprise(ctx):
    if j:
             image_url = j[0].get('url')
             await ctx.send(f'SI tan solo south park hubiera funcionado xd\n{image_url}')
+
+
+class MyView(discord.ui.View):
+
+    def __init__(self,episode_name,episode_season, episode_episode):
+        super().__init__(timeout=180.0)
+        self.selected_label = None
+        self.episode_name = episode_name
+        self.episode_season = episode_season
+        self.episode_episode = episode_episode
+
+    
+    @discord.ui.select(
+        placeholder = "Select a Language",
+        min_values = 1,
+        max_values = 1,
+        options = [
+            discord.SelectOption(
+                label = "English",
+                value = "English",
+                description = "Omg this is a great Option, you prefer the original language , GREAT!!"
+            ),
+
+            discord.SelectOption(
+                label = "Spanish",
+                value = "Spanish",
+                description = "La neta , el doblaje esta mejor"
+            )
+
+        ]
+    )
+
+    async def select_callback(self,interaction,select):
+         self.selected_label = select.values[0]
+        
+         if self.selected_label == 'Spanish':
+
+            urlSpanish = f'https://www.southpark.lat/episodios/5h5in2/south-park-w-t-f-temporada-{self.episode_season}-ep-{self.episode_episode}'
+            print('Si jala')
+            await interaction.response.send_message(f"Disponible en Español : " + urlSpanish )
+
+         else:
+            urlEnglish = f'https://www.southpark.lat/en/episodes/2dhgcd/south-park-cupido-ye-season-{self.episode_season}-ep-{self.episode_episode}'
+            await interaction.response.send_message(f"Enjoy bro : " + urlEnglish)
+         
+    
+
    
 @bot.command(name='south')
 async def south(ctx):
+
     random_episode = random.randint(1,max_xd)
     url = f'https://spapi.dev/api/episodes/{random_episode}'
     response = requests.get(url)
@@ -45,6 +115,13 @@ async def south(ctx):
         await ctx.send(episode0)
         await ctx.send(description)
         await ctx.send(thumbail)
+
+        view = MyView(episode_name=episode_name,episode_season=episode_season,episode_episode=episode_episode)
+
+        await ctx.send("If you want to see free, first Select a Language", view = view)
+
+        await view.wait()
+
     else:
         await ctx.send("No jala")
 
@@ -78,39 +155,43 @@ async def frase(ctx):
 
 @bot.command(name="monday")
 async def monday(ctx):
-    hora1 = "Introduccion a la Ingenieria (8:00 am a 10:00 am)"
-    hora2 = "Calculo Diferencial (10:00 am a 12:00 pm)"
-    hora3= "Algebra Lineal (12:00 pm a 2:00 pm)"
+    hora1 = "Analisis de Algoritmos (8:00 am a 10:00 am)"
+    hora2 = "Analisis y Modelado de Software (10:00 am a 12:00 pm)"
     await ctx.send(hora1)
     await ctx.send(hora2)
-    await ctx.send(hora3)
    
 
 @bot.command(name="tuesday")
 async def tuesday(ctx):
-    hora1 = "Metodos de Programacion (8:00 am a 10:00 am)"
-    hora2 = "Ser Humano Como Proyecto(10:00 am a 12:00 pm )"
+    hora1 = "Probabilidad (8:00 am a 10:00 am)"
+    hora2 = "Dinamica (10:00 am a 12:00 pm )"
+    hora3= "Aprendizaje Estrategico (12:00 pm a 2:00 pm)"
     await ctx.send(hora1)
     await ctx.send(hora2)
+    await ctx.send(hora3)
     
 
 @bot.command(name="wednesday")
 async def wednesday(ctx):
-    hora1 = "Calculo Diferencial (10:00 am a 12:00 pm)"
+    hora1 = "Analisis de Algoritmos (8:00 am a 10:00 pm)"
+    hora2 = "Topicos Selectos de Quimica (10:00 am a 12:00 pm)"
     await ctx.send(hora1)
+    await ctx.send(hora2)
 
 
 @bot.command(name="thursday")
 async def thursday(ctx):
-    hora1 = "Metodos de Programacion (8:00 am a 10:00 am)"
-    hora2 = "Ser Humano Como Proyecto(10:00 am a 12:00 pm )"
+    hora1 = "Probabilidad (8:00 am a 10:00 am)"
+    hora2 = "Dinamica (10:00 am a 12:00 pm )"
+    hora3= "Aprendizaje Estrategico (12:00 pm a 2:00 pm)"
     await ctx.send(hora1)
     await ctx.send(hora2)
+    await ctx.send(hora3)
 
 @bot.command(name="friday")
 async def friday(ctx):
-    hora1 = "Introduccion a la Ingenieria (8:00 am a 10:00 am)"
-    hora2 = "Algebra Lineal (12:00 pm a 2:00 pm)"
+    hora1 = "Topicos Selectos de Quimica (8:00 am a 10:00 am)"
+    hora2 = "Analisis y Modelado de Software (10:00 am a 12:00 pm)"
     await ctx.send(hora1)
     await ctx.send(hora2)
 
