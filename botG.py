@@ -5,6 +5,7 @@ import os
 import random
 from discord.ext import commands
 import requests
+from bs4 import BeautifulSoup
 import json
 
 load_dotenv()
@@ -42,6 +43,9 @@ async def surprise(ctx):
             await ctx.send(f'SI tan solo south park hubiera funcionado xd\n{image_url}')
 
 
+base_urlSP = 'https://www.southpark.lat/episodios'
+
+base_urlEN  = 'https://www.southpark.lat/en/episodes'
 class MyView(discord.ui.View):
 
     def __init__(self,episode_name,episode_season, episode_episode):
@@ -72,20 +76,37 @@ class MyView(discord.ui.View):
         ]
     )
 
-    async def select_callback(self,interaction,select):
-         self.selected_label = select.values[0]
-        
-         if self.selected_label == 'Spanish':
 
-            urlSpanish = f'https://www.southpark.lat/episodios/5h5in2/south-park-w-t-f-temporada-{self.episode_season}-ep-{self.episode_episode}'
-            print('Si jala')
-            await interaction.response.send_message(f"Disponible en Español : " + urlSpanish )
+    async def select_callback(self,interaction:discord.Interaction,select : discord.ui.Select):
 
-         else:
-            urlEnglish = f'https://www.southpark.lat/en/episodes/2dhgcd/south-park-cupido-ye-season-{self.episode_season}-ep-{self.episode_episode}'
-            await interaction.response.send_message(f"Enjoy bro : " + urlEnglish)
-         
+        await interaction.response.defer()
+
+        self.selected_label = select.values[0]
+
+        print('Ya selecciono los values')
+        base_url = base_urlSP if self.selected_label == 'Spanish' else base_urlEN
+
+        response = requests.get(base_url)
+
+        if response.status_code == 200:
+            print('El estatus es correcto')
+            soup = BeautifulSoup(response.text, 'html.parser')
+
+            episodes = soup.findAll('a', href=True)
+            print('Ya tiene los episodios')
+            for episode in episodes:
+                url_episode = episode['href']
+                text_episode = episode.text.lower()
+
+                if f'{self.episode_season}' in text_episode and f'{self.episode_episode}' in text_episode and f'{self.episode_name.lower()}' in text_episode:
+            
+                    await interaction.followup.send(f"Disponible en {'Español' if self.selected_label == 'Spanish' else 'English'}: {base_url}{url_episode}")
+                    break 
+        else:
     
+            await interaction.followup.send("Error al obtener los episodios. Inténtalo nuevamente.")
+
+
 
    
 @bot.command(name='south')
@@ -119,8 +140,7 @@ async def south(ctx):
         view = MyView(episode_name=episode_name,episode_season=episode_season,episode_episode=episode_episode)
 
         await ctx.send("If you want to see free, first Select a Language", view = view)
-
-        await view.wait()
+        print('Procesando')
 
     else:
         await ctx.send("No jala")
